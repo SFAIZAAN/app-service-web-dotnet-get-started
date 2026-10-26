@@ -30,26 +30,17 @@ For Azure App Service:
 3. Save the setting and restart the App Service. Do not put database passwords
    in source control.
 
-## CI/CD with Azure Pipelines
+## CI with Azure Pipelines
 
-The pipeline builds and packages the app on pushes and pull requests targeting
-`main`. On `main`, it deploys the package to a Windows Azure App Service when
-the `webAppName` pipeline variable is configured.
+The pipeline restores NuGet packages, builds the Release configuration, and
+publishes a Web Deploy package on pushes and pull requests targeting `main`.
+Download the `drop` artifact from a successful run to retrieve the package.
 
-1. Create a **Windows** App Service and an Azure Resource Manager service
-   connection in Azure DevOps. Grant the service connection access to the
-   subscription/resource group containing the App Service.
-2. In Azure DevOps, open the pipeline's **Variables** and set `webAppName` to
-   the exact App Service name. The service connection is configured in
-   `azure-pipelines.yml` as `SFAIZAAN`; change `azureServiceConnection` there if
-   your connection has a different name.
-3. Save the pipeline and run it on `main`. Pull requests build and publish the
-   package but do not deploy. Until `webAppName` is set, the deploy stage is
-   skipped.
-
-Configure the App Service's `RentalDb` connection string separately as
-described above. The pipeline deploys the application; it does not create Azure
-resources or configure database credentials.
+This pipeline does not deploy to Azure. To enable deployment later, create a
+Windows App Service and an Azure Resource Manager service connection in Azure
+DevOps. A GitHub service connection can check out source but cannot authorize
+deployment to Azure. Configure the App Service's `RentalDb` connection string
+separately as described above.
 
 ## Run with Docker
 
