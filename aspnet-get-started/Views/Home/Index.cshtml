@@ -1,31 +1,83 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model List<aspnet_get_started.Models.RentalRecord>
+@{
+    ViewBag.Title = "Rent Dashboard";
 }
 
 <div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <h1>SF Rental</h1>
+    <p class="lead">Track rents, advance payments, and outstanding dues for each tenant.</p>
+    <p>
+        @Html.ActionLink("Add New Rent Record", "Add", "Home", null, new { @class = "btn btn-primary btn-lg" })
+    </p>
 </div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
 <div class="row">
     <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+        <div class="panel panel-info">
+            <div class="panel-heading"><strong>Total Due</strong></div>
+            <div class="panel-body">₹@ViewBag.TotalDue</div>
+        </div>
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
+        <div class="panel panel-warning">
+            <div class="panel-heading"><strong>Total Advance</strong></div>
+            <div class="panel-body">₹@ViewBag.TotalAdvance</div>
+        </div>
     </div>
     <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+        <div class="panel panel-success">
+            <div class="panel-heading"><strong>Total Collected</strong></div>
+            <div class="panel-body">₹@ViewBag.TotalCollected</div>
+        </div>
     </div>
 </div>
+
+<h2>Tenant Rent Ledger</h2>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Tenant</th>
+            <th>Property</th>
+            <th>Rent Month</th>
+            <th>Monthly Rent</th>
+            <th>Advance</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.TenantName</td>
+                <td>@item.PropertyName</td>
+                <td>@item.DueMonth</td>
+                <td>₹@item.MonthlyRent</td>
+                <td>₹@item.AdvancePaid</td>
+                <td>₹@item.AmountPaid</td>
+                <td>₹@item.DueAmount</td>
+                <td>
+                    @if (item.DueAmount == 0)
+                    {
+                        <span class="label label-success">Paid</span>
+                    }
+                    else if (item.AmountPaid > 0)
+                    {
+                        <span class="label label-warning">Partial</span>
+                    }
+                    else
+                    {
+                        <span class="label label-danger">Pending</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

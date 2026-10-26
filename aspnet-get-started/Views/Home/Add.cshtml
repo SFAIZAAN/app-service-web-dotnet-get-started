@@ -1,0 +1,51 @@
+﻿@model aspnet_get_started.Models.RentalRecord
+@{
+    ViewBag.Title = "Add Rent Record";
+}
+
+<h2>Add Rent Record</h2>
+
+@using (Html.BeginForm("Add", "Home", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.TenantName)
+        @Html.TextBoxFor(m => m.TenantName, new { @class = "form-control", placeholder = "Enter tenant name" })
+        @Html.ValidationMessageFor(m => m.TenantName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.PropertyName)
+        @Html.TextBoxFor(m => m.PropertyName, new { @class = "form-control", placeholder = "Example: Flat B-204" })
+        @Html.ValidationMessageFor(m => m.PropertyName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.DueMonth)
+        @Html.TextBoxFor(m => m.DueMonth, new { @class = "form-control", placeholder = "Example: October 2026" })
+        @Html.ValidationMessageFor(m => m.DueMonth, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.MonthlyRent)
+        @Html.TextBoxFor(m => m.MonthlyRent, new { @class = "form-control", type = "number", min = "0", step = "0.01" })
+        @Html.ValidationMessageFor(m => m.MonthlyRent, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.AdvancePaid)
+        @Html.TextBoxFor(m => m.AdvancePaid, new { @class = "form-control", type = "number", min = "0", step = "0.01" })
+        @Html.ValidationMessageFor(m => m.AdvancePaid, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.AmountPaid)
+        @Html.TextBoxFor(m => m.AmountPaid, new { @class = "form-control", type = "number", min = "0", step = "0.01" })
+        @Html.ValidationMessageFor(m => m.AmountPaid, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Rent Record</button>
+    @Html.ActionLink("Back to Dashboard", "Index", "Home", null, new { @class = "btn btn-default" })
+}
