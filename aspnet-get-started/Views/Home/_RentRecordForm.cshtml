@@ -1,0 +1,70 @@
+﻿@model aspnet_get_started.Models.RentRecordForm
+@using System.Collections.Generic
+@using aspnet_get_started.Models
+<div class="form-card">
+@using (Html.BeginForm((string)ViewBag.FormAction, "Home", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.PropertyId)
+        <select id="PropertyId" name="PropertyId" class="form-control">
+            <option value="">-- Select an assigned property --</option>
+            @foreach (var property in (IList<RentalProperty>)ViewBag.Properties)
+            {
+                <option value="@property.Id" data-monthly-rent="@property.MonthlyRent.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                        @(property.Id == Model.PropertyId ? "selected" : "")>
+                    @property.Name — @property.TenantName
+                </option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.PropertyId, "", new { @class = "text-danger" })
+        @if (((IList<RentalProperty>)ViewBag.Properties).Count == 0)
+        {
+            <p class="help-block">Add a tenant, then create or assign a property before adding rent.</p>
+        }
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.DueMonth)
+        @Html.TextBoxFor(m => m.DueMonth, new { @class = "form-control", type = "month" })
+        @Html.ValidationMessageFor(m => m.DueMonth, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.DueDate)
+        @Html.TextBoxFor(m => m.DueDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.DueDate, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.RentAmount)
+        @Html.TextBoxFor(m => m.RentAmount, new { @class = "form-control", type = "number", min = "0.01", step = "0.01" })
+        @Html.ValidationMessageFor(m => m.RentAmount, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.AdvancePaid)
+        @Html.TextBoxFor(m => m.AdvancePaid, new { @class = "form-control", type = "number", min = "0", step = "0.01" })
+        @Html.ValidationMessageFor(m => m.AdvancePaid, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Rent Charge</button>
+    @Html.ActionLink("Back to Dashboard", "Index", "Home", null, new { @class = "btn btn-default" })
+}
+</div>
+
+<script>
+    (function () {
+        var propertySelect = document.getElementById("PropertyId");
+        var rentInput = document.getElementById("RentAmount");
+        propertySelect.addEventListener("change", function () {
+            var option = propertySelect.options[propertySelect.selectedIndex];
+            if (option && option.getAttribute("data-monthly-rent")) {
+                rentInput.value = option.getAttribute("data-monthly-rent");
+            }
+        });
+    }());
+</script>

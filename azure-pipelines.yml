@@ -11,19 +11,62 @@ variables:
   solution: 'sf rental app.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  azureServiceConnection: 'SFAIZAAN'
+  webAppName: ''
 
-steps:
-  - task: NuGetToolInstaller@1
-    displayName: Install NuGet
+stages:
+  - stage: Build
+    displayName: CI - Build and package
+    jobs:
+      - job: BuildWebApp
+        displayName: Build ASP.NET MVC app
+        steps:
+          - task: NuGetToolInstaller@1
+            displayName: Install NuGet
 
-  - task: NuGetCommand@2
-    displayName: Restore NuGet packages
-    inputs:
-      restoreSolution: '$(solution)'
+          - task: NuGetCommand@2
+            displayName: Restore NuGet packages
+            inputs:
+              restoreSolution: '$(solution)'
 
-  - task: VSBuild@1
-    displayName: Build solution
-    inputs:
-      solution: '$(solution)'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+          - task: VSBuild@1
+            displayName: Build and package web app
+            inputs:
+              solution: '$(solution)'
+              platform: '$(buildPlatform)'
+              configuration: '$(buildConfiguration)'
+              msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:PackageLocation="$(Build.ArtifactStagingDirectory)\SF-Rental.zip"'
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish deployment package
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: drop
+              publishLocation: Container
+
+  - stage: Deploy
+    displayName: CD - Deploy to Azure App Service
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['webAppName'], ''))
+    jobs:
+      - job: DeployWebApp
+        displayName: Deploy to Windows App Service
+        steps:
+          - task: DownloadBuildArtifacts@1
+            displayName: Download deployment package
+            inputs:
+              buildType: current
+              downloadType: single
+              artifactName: drop
+              downloadPath: '$(Pipeline.Workspace)'
+
+          - task: AzureRmWebAppDeployment@4
+            displayName: Deploy SF Rental
+            inputs:
+              ConnectionType: AzureRM
+              azureSubscription: '$(azureServiceConnection)'
+              appType: webApp
+              WebAppName: '$(webAppName)'
+              enableCustomDeployment: true
+              DeploymentType: webDeploy
+              Package: '$(Pipeline.Workspace)\drop\SF-Rental.zip'

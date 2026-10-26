@@ -121,10 +121,14 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\ManagementController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\RentalRecord.cs" />
+    <Compile Include="Models\RentalDashboard.cs" />
+    <Compile Include="Models\RentalDatabase.cs" />
+    <Compile Include="Models\RentRecordDetails.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -163,7 +167,14 @@
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Add.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
+    <Content Include="Views\Home\Details.cshtml" />
+    <Content Include="Views\Home\Edit.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Home\_RentRecordForm.cshtml" />
+    <Content Include="Views\Management\Tenants.cshtml" />
+    <Content Include="Views\Management\TenantForm.cshtml" />
+    <Content Include="Views\Management\Properties.cshtml" />
+    <Content Include="Views\Management\PropertyForm.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

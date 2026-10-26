@@ -1,0 +1,61 @@
+﻿@model IList<aspnet_get_started.Models.RentalProperty>
+@using System.Collections.Generic
+@{
+    ViewBag.Title = "Properties";
+}
+<div class="page-heading">
+    <div>
+        <h1>Properties</h1>
+        <p>Manage rental units, monthly rent, and tenant assignments.</p>
+    </div>
+    <div>
+        @Html.ActionLink("Add property", "AddProperty", null, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Tenants", "Tenants", null, new { @class = "btn btn-default" })
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <h3>No properties added yet</h3>
+        <p>Add a rental unit and assign a tenant before creating monthly rent charges.</p>
+        @Html.ActionLink("Add your first property", "AddProperty", null, new { @class = "btn btn-primary" })
+    </div>
+}
+else
+{
+    <div class="table-responsive table-card">
+        <table class="table">
+            <thead><tr><th>Property</th><th>Address</th><th>Monthly rent</th><th>Tenant</th><th>Actions</th></tr></thead>
+            <tbody>
+            @foreach (var property in Model)
+            {
+                <tr>
+                    <td class="tenant-primary">@property.Name</td>
+                    <td>@property.Address</td>
+                    <td>₹@property.MonthlyRent.ToString("N2")</td>
+                    <td>@property.TenantName</td>
+                    <td class="action-links">
+                        @Html.ActionLink("Edit", "EditProperty", new { id = property.Id })
+                        @using (Html.BeginForm("DeleteProperty", "Management", new { id = property.Id }, FormMethod.Post, new { @class = "inline-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-link delete-link"
+                                    onclick="return confirm('Delete this property? Properties with rent records cannot be deleted.');">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

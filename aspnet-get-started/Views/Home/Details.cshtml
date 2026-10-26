@@ -1,0 +1,99 @@
+﻿@model aspnet_get_started.Models.RentRecordDetails
+@{
+    ViewBag.Title = "Rent Record Details";
+    var record = Model.Record;
+}
+<div class="page-heading">
+    <div>
+        <h1>Rent Record Details</h1>
+        <p>@record.TenantName · @record.PropertyName · @record.DueMonth.ToString("MMMM yyyy")</p>
+    </div>
+    <div>
+        @Html.ActionLink("Edit charge", "Edit", new { id = record.Id }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Back to dashboard", "Index", null, new { @class = "btn btn-default" })
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="details-card">
+<dl class="dl-horizontal">
+    <dt>Tenant</dt><dd>@record.TenantName</dd>
+    <dt>Property</dt><dd>@record.PropertyName</dd>
+    <dt>Rent month</dt><dd>@record.DueMonth.ToString("MMMM yyyy")</dd>
+    <dt>Due date</dt><dd>@record.DueDate.ToString("d")</dd>
+    <dt>Rent</dt><dd>₹@record.RentAmount.ToString("N2")</dd>
+    <dt>Advance applied</dt><dd>₹@record.AdvancePaid.ToString("N2")</dd>
+    <dt>Paid</dt><dd>₹@record.AmountPaid.ToString("N2")</dd>
+    <dt>Outstanding</dt><dd>₹@record.DueAmount.ToString("N2")</dd>
+    <dt>Status</dt><dd>@record.Status</dd>
+</dl>
+
+<h3>Record a payment</h3>
+@using (Html.BeginForm("AddPayment", "Home", new { id = record.Id }, FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        <label for="Amount">Payment amount</label>
+        <input class="form-control" type="number" id="Amount" name="Amount" min="0.01" max="@record.DueAmount"
+               step="0.01" required="required"
+               value="@((Model.NewPayment.Amount > 0m) ? Model.NewPayment.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty)" />
+        @Html.ValidationMessage("Amount", "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group">
+        <label for="PaidOn">Paid on</label>
+        <input class="form-control" type="date" id="PaidOn" name="PaidOn"
+               value="@Model.NewPayment.PaidOn.ToString("yyyy-MM-dd")" required="required" />
+        @Html.ValidationMessage("PaidOn", "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group">
+        <label for="Note">Note (optional)</label>
+        <input class="form-control" type="text" id="Note" name="Note" maxlength="255"
+               value="@Model.NewPayment.Note" />
+    </div>
+    <button type="submit" class="btn btn-primary" @(record.DueAmount <= 0 ? "disabled" : "")>Save payment</button>
+}
+
+</div>
+
+<h3>Payment history</h3>
+@if (record.Payments.Count == 0)
+{
+    <p>No payments recorded for this rent charge.</p>
+}
+else
+{
+    <div class="table-responsive table-card">
+        <table class="table">
+            <thead>
+                <tr><th>Paid on</th><th>Amount</th><th>Note</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var payment in record.Payments)
+            {
+                <tr>
+                    <td>@payment.PaidOn.ToString("d")</td>
+                    <td>₹@payment.Amount.ToString("N2")</td>
+                    <td>@payment.Note</td>
+                    <td>
+                        @using (Html.BeginForm("DeletePayment", "Home", new { id = record.Id, paymentId = payment.Id }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-link"
+                                    onclick="return confirm('Delete this payment?');">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,13 +1,15 @@
-﻿@model List<aspnet_get_started.Models.RentalRecord>
+﻿@model aspnet_get_started.Models.RentalDashboard
 @{
     ViewBag.Title = "Rent Dashboard";
 }
 
-<div class="jumbotron">
+<div class="jumbotron dashboard-hero">
     <h1>SF Rental</h1>
-    <p class="lead">Track rents, advance payments, and outstanding dues for each tenant.</p>
+    <p class="lead">Manage tenants, properties, rent charges, and payment history.</p>
     <p>
-        @Html.ActionLink("Add New Rent Record", "Add", "Home", null, new { @class = "btn btn-primary btn-lg" })
+        @Html.ActionLink("Add Rent Charge", "Add", "Home", null, new { @class = "btn btn-primary btn-lg" })
+        @Html.ActionLink("Manage Tenants", "Tenants", "Management", null, new { @class = "btn btn-default btn-lg" })
+        @Html.ActionLink("Manage Properties", "Properties", "Management", null, new { @class = "btn btn-default btn-lg" })
     </p>
 </div>
 
@@ -15,69 +17,145 @@
 {
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
 <div class="row">
-    <div class="col-md-4">
-        <div class="panel panel-info">
-            <div class="panel-heading"><strong>Total Due</strong></div>
-            <div class="panel-body">₹@ViewBag.TotalDue</div>
+    <div class="col-md-3 col-sm-6">
+        <div class="metric-card">
+            <div class="metric-label">Outstanding</div>
+            <div class="metric-value">₹@Model.TotalDue.ToString("N2")</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="panel panel-warning">
-            <div class="panel-heading"><strong>Total Advance</strong></div>
-            <div class="panel-body">₹@ViewBag.TotalAdvance</div>
+    <div class="col-md-3 col-sm-6">
+        <div class="metric-card metric-success">
+            <div class="metric-label">Collected</div>
+            <div class="metric-value">₹@Model.TotalCollected.ToString("N2")</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="panel panel-success">
-            <div class="panel-heading"><strong>Total Collected</strong></div>
-            <div class="panel-body">₹@ViewBag.TotalCollected</div>
+    <div class="col-md-3 col-sm-6">
+        <div class="metric-card metric-warning">
+            <div class="metric-label">Advance applied</div>
+            <div class="metric-value">₹@Model.TotalAdvance.ToString("N2")</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="metric-card metric-neutral">
+            <div class="metric-label">Total charges</div>
+            <div class="metric-value">@Model.TotalRecords</div>
         </div>
     </div>
 </div>
 
-<h2>Tenant Rent Ledger</h2>
-
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>Tenant</th>
-            <th>Property</th>
-            <th>Rent Month</th>
-            <th>Monthly Rent</th>
-            <th>Advance</th>
-            <th>Paid</th>
-            <th>Due</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+<div class="section-heading">
+    <h2>Rent ledger</h2>
+    <p>Search charges and review payment status.</p>
+</div>
+@using (Html.BeginForm("Index", "Home", FormMethod.Get, new { @class = "form-inline", role = "search" }))
+{
+    <div class="filter-bar">
+    <div class="form-group">
+        @Html.Label("search", "Search", new { @class = "sr-only" })
+        @Html.TextBox("search", Model.Search, new { @class = "form-control search-input", placeholder = "Tenant, property, or month" })
+    </div>
+    <div class="form-group">
+        @Html.Label("status", "Status", new { @class = "sr-only" })
+        @Html.DropDownList("status", new SelectList(new[]
         {
-            <tr>
-                <td>@item.TenantName</td>
-                <td>@item.PropertyName</td>
-                <td>@item.DueMonth</td>
-                <td>₹@item.MonthlyRent</td>
-                <td>₹@item.AdvancePaid</td>
-                <td>₹@item.AmountPaid</td>
-                <td>₹@item.DueAmount</td>
-                <td>
-                    @if (item.DueAmount == 0)
-                    {
-                        <span class="label label-success">Paid</span>
-                    }
-                    else if (item.AmountPaid > 0)
-                    {
-                        <span class="label label-warning">Partial</span>
-                    }
-                    else
-                    {
-                        <span class="label label-danger">Pending</span>
-                    }
-                </td>
-            </tr>
+            new SelectListItem { Text = "All statuses", Value = "" },
+            new SelectListItem { Text = "Pending", Value = "Pending" },
+            new SelectListItem { Text = "Partial", Value = "Partial" },
+            new SelectListItem { Text = "Overdue", Value = "Overdue" },
+            new SelectListItem { Text = "Paid", Value = "Paid" }
+        }, "Value", "Text", Model.Status), new { @class = "form-control" })
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    @Html.ActionLink("Clear", "Index", null, new { @class = "btn btn-default" })
+    </div>
+}
+
+<br />
+@if (Model.Records.Count == 0)
+{
+    <div class="empty-state">
+        <h3>@(Model.TotalRecords == 0 ? "Your rent ledger is ready" : "No matching rent charges")</h3>
+        <p>@(Model.TotalRecords == 0 ? "Start by adding a tenant and property, then record a monthly rent charge." : "Try another search or status filter to find a rent charge.")</p>
+        @if (Model.TotalRecords == 0)
+        {
+            @Html.ActionLink("Add a tenant", "AddTenant", "Management", null, new { @class = "btn btn-default" })
+            @Html.ActionLink("Add a property", "AddProperty", "Management", null, new { @class = "btn btn-default" })
         }
-    </tbody>
-</table>
+        else
+        {
+            @Html.ActionLink("Clear filters", "Index", null, new { @class = "btn btn-default" })
+        }
+    </div>
+}
+else
+{
+    <div class="table-responsive table-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tenant</th>
+                    <th>Property</th>
+                    <th>Rent month</th>
+                    <th>Due date</th>
+                    <th>Rent</th>
+                    <th>Advance</th>
+                    <th>Paid</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Records)
+            {
+                <tr>
+                    <td><span class="tenant-primary">@item.TenantName</span></td>
+                    <td>@item.PropertyName</td>
+                    <td>@item.DueMonth.ToString("MMMM yyyy")</td>
+                    <td>@item.DueDate.ToString("d")</td>
+                    <td>₹@item.RentAmount.ToString("N2")</td>
+                    <td>₹@item.AdvancePaid.ToString("N2")</td>
+                    <td class="amount-paid">₹@item.AmountPaid.ToString("N2")</td>
+                    <td class="amount-due">₹@item.DueAmount.ToString("N2")</td>
+                    <td>
+                        @if (item.Status == "Paid")
+                        {
+                            <span class="status-pill status-paid">Paid</span>
+                        }
+                        else if (item.Status == "Overdue")
+                        {
+                            <span class="status-pill status-overdue">Overdue</span>
+                        }
+                        else if (item.Status == "Partial")
+                        {
+                            <span class="status-pill status-partial">Partial</span>
+                        }
+                        else
+                        {
+                            <span class="status-pill status-pending">Pending</span>
+                        }
+                    </td>
+                    <td class="action-links">
+                        @Html.ActionLink("Details", "Details", new { id = item.Id })
+                        <span> | </span>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Id })
+                        <span> | </span>
+                        @using (Html.BeginForm("Delete", "Home", new { id = item.Id }, FormMethod.Post, new { @class = "inline-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-link delete-link"
+                                    onclick="return confirm('Delete this rent record and all of its payments?');">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

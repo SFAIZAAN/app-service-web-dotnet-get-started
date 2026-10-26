@@ -1,0 +1,60 @@
+﻿@model IList<aspnet_get_started.Models.Tenant>
+@using System.Collections.Generic
+@{
+    ViewBag.Title = "Tenants";
+}
+<div class="page-heading">
+    <div>
+        <h1>Tenants</h1>
+        <p>Keep tenant contact details and assignments up to date.</p>
+    </div>
+    <div>
+        @Html.ActionLink("Add tenant", "AddTenant", null, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Properties", "Properties", null, new { @class = "btn btn-default" })
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        <h3>No tenants added yet</h3>
+        <p>Add your first tenant to start assigning properties and recording rent.</p>
+        @Html.ActionLink("Add your first tenant", "AddTenant", null, new { @class = "btn btn-primary" })
+    </div>
+}
+else
+{
+    <div class="table-responsive table-card">
+        <table class="table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+            <tbody>
+            @foreach (var tenant in Model)
+            {
+                <tr>
+                    <td class="tenant-primary">@tenant.Name</td>
+                    <td>@(string.IsNullOrWhiteSpace(tenant.Phone) ? "—" : tenant.Phone)</td>
+                    <td>@(string.IsNullOrWhiteSpace(tenant.Email) ? "—" : tenant.Email)</td>
+                    <td class="action-links">
+                        @Html.ActionLink("Edit", "EditTenant", new { id = tenant.Id })
+                        @using (Html.BeginForm("DeleteTenant", "Management", new { id = tenant.Id }, FormMethod.Post, new { @class = "inline-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-link delete-link"
+                                    onclick="return confirm('Delete this tenant? Assigned tenants cannot be deleted.');">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

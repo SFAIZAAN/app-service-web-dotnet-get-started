@@ -1,0 +1,12 @@
+﻿@model aspnet_get_started.Models.RentRecordForm
+@{
+    ViewBag.Title = "Edit Rent Charge";
+    ViewBag.FormAction = "Edit";
+}
+<div class="page-heading">
+    <div>
+        <h1>Edit Rent Charge</h1>
+        <p>Update the rent charge details. Rent must still cover advances and payments received.</p>
+    </div>
+</div>
+@Html.Partial("_RentRecordForm", Model)

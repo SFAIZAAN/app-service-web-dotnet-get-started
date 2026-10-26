@@ -1,0 +1,49 @@
+﻿@model aspnet_get_started.Models.RentalProperty
+@using aspnet_get_started.Models
+@{
+    ViewBag.Title = ViewBag.Title ?? "Property";
+}
+<div class="page-heading">
+    <div>
+        <h1>@ViewBag.Title</h1>
+        <p>Set the unit details, rent amount, and current tenant assignment.</p>
+    </div>
+</div>
+
+<div class="form-card">
+    @using (Html.BeginForm((string)ViewBag.FormAction, "Management", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Id)
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Name)
+            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", maxlength = "100", autocomplete = "off" })
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Address)
+            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", maxlength = "255", autocomplete = "street-address" })
+            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.MonthlyRent)
+            @Html.TextBoxFor(m => m.MonthlyRent, new { @class = "form-control", type = "number", min = "0.01", step = "0.01" })
+            @Html.ValidationMessageFor(m => m.MonthlyRent, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.TenantId)
+            @Html.DropDownListFor(m => m.TenantId,
+                new SelectList((IList<Tenant>)ViewBag.Tenants, "Id", "Name", Model.TenantId),
+                "-- Unassigned --", new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.TenantId, "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save property</button>
+        @Html.ActionLink("Cancel", "Properties", null, new { @class = "btn btn-default" })
+    }
+</div>
